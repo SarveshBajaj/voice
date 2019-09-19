@@ -1,0 +1,48 @@
+Time taken for analysis:  1.035881757736206
+
+number_ of_syllables  =  21
+number_of_pauses  =  1
+rate_of_speech  =  4
+articulation_rate  =  5
+speaking_duration  =  4.3
+original_duration  =  5
+balance  =  0.9
+f0_mean  =  127.02
+f0_std  =  22.21
+f0_median  =  123.4
+f0_min  =  80
+f0_max  =  177
+f0_quantile25  =  115
+f0_quan75  =  144
+Pronunciation_posteriori_probability_score_percentage  =  95.07
+Gender and Mood of Speech  =  a Male, mood of speech: Reading
+p-value/sample size  =  [0.0, 5]
+
+Filename: voice.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+     8  108.062 MiB  108.062 MiB   @profile
+     9                             def write_to_txtfile(p,c):
+    10  108.062 MiB    0.000 MiB       sys.stdout = open(without_wav+'.txt','wt')
+    11                                 # mysp.myspgend(p,c)
+    12                                 # mysp.mysppron(p,c)
+    13                                 # mysp.myspsyl(p,c)
+    14                                 # mysp.mysppaus(p,c)
+    15                                 # mysp.myspsr(p,c)
+    16                                 # mysp.myspatc(p,c)
+    17                                 # mysp.myspst(p,c)
+    18                                 # mysp.myspod(p,c)
+    19                                 # mysp.myspbala(p,c)
+    20                                 # mysp.myspf0mean(p,c)
+    21                                 # mysp.myspf0mean(p,c)
+    22                                 # mysp.myspf0sd(p,c)
+    23                                 # mysp.myspf0med(p,c)
+    24  120.191 MiB   12.129 MiB       dict = mysp.mysptotal(p,c)
+    25  120.191 MiB    0.000 MiB       print()
+    26  120.191 MiB    0.000 MiB       for key in dict:
+    27  120.191 MiB    0.000 MiB           print(key," = ", dict[key])
+    28  120.191 MiB    0.000 MiB       print()
+    29  120.191 MiB    0.000 MiB       return None
+
+

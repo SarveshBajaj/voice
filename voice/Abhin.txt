@@ -1,0 +1,71 @@
+Time taken for analysis:  2.2388594150543213
+
+number_ of_syllables  =  113
+number_of_pauses  =  6
+rate_of_speech  =  5
+articulation_rate  =  6
+speaking_duration  =  17.9
+original_duration  =  22.3
+balance  =  0.8
+f0_mean  =  138.04
+f0_std  =  30.06
+f0_median  =  133.1
+f0_min  =  80
+f0_max  =  262
+f0_quantile25  =  116
+f0_quan75  =  154
+Pronunciation_posteriori_probability_score_percentage  =  94.97
+Gender and Mood of Speech  =  a Male, mood of speech: speaking passionately
+p-value/sample size  =  [0.0, 5]
+
+Time taken for speech to text:  44.514095306396484 
+
+Text: hi good evening everyone today I have to speak about artificial intelligence a branch of computer science that develops machines and software with human like intelligence artificial intelligence is the ability of the computer program for machine to think and it is also a field of study which tries to make computer smart
+
+Filename: voice.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+     8  110.547 MiB  110.547 MiB   @profile
+     9                             def write_to_txtfile(p,c):
+    10  110.547 MiB    0.000 MiB       sys.stdout = open(without_wav+'.txt','wt')
+    11                                 # mysp.myspgend(p,c)
+    12                                 # mysp.mysppron(p,c)
+    13                                 # mysp.myspsyl(p,c)
+    14                                 # mysp.mysppaus(p,c)
+    15                                 # mysp.myspsr(p,c)
+    16                                 # mysp.myspatc(p,c)
+    17                                 # mysp.myspst(p,c)
+    18                                 # mysp.myspod(p,c)
+    19                                 # mysp.myspbala(p,c)
+    20                                 # mysp.myspf0mean(p,c)
+    21                                 # mysp.myspf0mean(p,c)
+    22                                 # mysp.myspf0sd(p,c)
+    23                                 # mysp.myspf0med(p,c)
+    24  141.746 MiB   31.199 MiB       dict = mysp.mysptotal(p,c)
+    25  141.746 MiB    0.000 MiB       print()
+    26  141.746 MiB    0.000 MiB       for key in dict:
+    27  141.746 MiB    0.000 MiB           print(key," = ", dict[key])
+    28  141.746 MiB    0.000 MiB       print()
+    29  141.746 MiB    0.000 MiB       return None
+
+
+Filename: voice.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    31  141.746 MiB  141.746 MiB   @profile
+    32                             def speech_to_text(t):
+    33  141.746 MiB    0.000 MiB       start = time.time()
+    34  141.746 MiB    0.000 MiB       r = sr.Recognizer()
+    35  141.746 MiB    0.000 MiB       with sr.AudioFile(t) as source:
+    36  141.746 MiB    0.000 MiB           audio = r.record(source)
+    37  141.746 MiB    0.000 MiB       try:
+    38  142.535 MiB    0.789 MiB           z = r.recognize_google(audio)
+    39  142.535 MiB    0.000 MiB           print("Time taken for speech to text: ",time.time() - start,"\n")
+    40  142.535 MiB    0.000 MiB           print("Text: "+z)
+    41  142.535 MiB    0.000 MiB           print()
+    42                                 except Exception as y:
+    43                                     print("Exception: "+str(y))
+
+
