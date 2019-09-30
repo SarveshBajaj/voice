@@ -11,89 +11,91 @@ item []:
         name = "syllables" 
         xmin = 0 
         xmax = 5 
-        points: size = 21 
+        points: size = 19 
         points [1]:
-            number = 0.36144186064703504 
+            number = 0.7713048931326689 
             mark = "1" 
         points [2]:
-            number = 0.4427023055011566 
+            number = 0.9492800528534101 
             mark = "2" 
         points [3]:
-            number = 0.7539265474305965 
+            number = 1.2705692998117561 
             mark = "3" 
         points [4]:
-            number = 0.9153374964814285 
+            number = 1.4093376247149965 
             mark = "4" 
         points [5]:
-            number = 1.1277986580353976 
+            number = 1.9278995202963642 
             mark = "5" 
         points [6]:
-            number = 1.2745844665969288 
+            number = 2.0404356827324097 
             mark = "6" 
         points [7]:
-            number = 1.4328801812566287 
+            number = 2.2054088856691307 
             mark = "7" 
         points [8]:
-            number = 1.5726635402840485 
+            number = 2.386016788805491 
             mark = "8" 
         points [9]:
-            number = 1.7085586495832887 
+            number = 2.622371922091944 
             mark = "9" 
         points [10]:
-            number = 1.908490257978674 
+            number = 2.741702893504247 
             mark = "10" 
         points [11]:
-            number = 1.9938857165903223 
+            number = 2.924476844740889 
             mark = "11" 
         points [12]:
-            number = 2.1818250658098375 
+            number = 3.077516851200512 
             mark = "12" 
         points [13]:
-            number = 2.2963955925471695 
+            number = 3.1837671333051487 
             mark = "13" 
         points [14]:
-            number = 2.409598213308111 
+            number = 3.418997485812514 
             mark = "14" 
         points [15]:
-            number = 3.0541259874495807 
+            number = 3.5199246779918143 
             mark = "15" 
         points [16]:
-            number = 3.3344450908470153 
+            number = 3.6763676646097734 
             mark = "16" 
         points [17]:
-            number = 3.5215778931475796 
+            number = 3.8082071151182864 
             mark = "17" 
         points [18]:
-            number = 3.7545011474501013 
+            number = 3.91596761775228 
             mark = "18" 
         points [19]:
-            number = 3.860823032612799 
+            number = 4.554077703841289 
             mark = "19" 
-        points [20]:
-            number = 3.9493431410258837 
-            mark = "20" 
-        points [21]:
-            number = 4.1287166034012905 
-            mark = "21" 
     item [2]:
         class = "IntervalTier" 
         name = "silences" 
         xmin = 0 
         xmax = 5 
-        intervals: size = 4 
+        intervals: size = 6 
         intervals [1]:
             xmin = 0 
-            xmax = 0.30800000000000005 
+            xmax = 0.5800000000000001 
             text = "silent" 
         intervals [2]:
-            xmin = 0.30800000000000005 
-            xmax = 4.452 
+            xmin = 0.5800000000000001 
+            xmax = 1.492 
             text = "sounding" 
         intervals [3]:
-            xmin = 4.452 
-            xmax = 4.836 
+            xmin = 1.492 
+            xmax = 1.828 
             text = "silent" 
         intervals [4]:
-            xmin = 4.836 
+            xmin = 1.828 
+            xmax = 3.988 
+            text = "sounding" 
+        intervals [5]:
+            xmin = 3.988 
+            xmax = 4.532 
+            text = "silent" 
+        intervals [6]:
+            xmin = 4.532 
             xmax = 5 
             text = "sounding" 
