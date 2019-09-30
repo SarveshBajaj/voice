@@ -2,12 +2,13 @@
 #pip install Speech_recognition or #pip install SpeechRecognition
 import speech_recognition as sr
 import sys, time
+import os
 mysp=__import__("my-voice-analysis")
 #p= "Abhinav"
 #c=r"C:\Users\soura\Desktop\Projects_iNeuron.ai\Voice Analysis"
-@profile
+
 def write_to_txtfile(p,c):
-    sys.stdout = open(without_wav+'.txt','wt')
+    #sys.stdout = open(without_wav+'.txt','wt')
     # mysp.myspgend(p,c)
     # mysp.mysppron(p,c)
     # mysp.myspsyl(p,c)
@@ -22,13 +23,14 @@ def write_to_txtfile(p,c):
     # mysp.myspf0sd(p,c)
     # mysp.myspf0med(p,c)
     dict = mysp.mysptotal(p,c)
+    print(dict)
     print()
     for key in dict:
         print(key," = ", dict[key])
     print()
     return None
 
-@profile
+
 def speech_to_text(t):
     start = time.time()
     r = sr.Recognizer()
@@ -56,8 +58,7 @@ for filename in glob.glob('*.wav'):
     #print(with_wav)
     #print(without_wav)
 
-    #output_1 = voice_analysis(p = without_wav, c=r"C:\Users\soura\Desktop\Projects_iNeuron.ai\Voice Analysis")
+    #output_1 = voice_analysis(p = without_wav, c= os.path.dirname(os.path.realpath(__file__)))
     #output_2 = speech_to_text(t=with_wav)
-
-    write_to_txtfile(without_wav,'/home/sarvesh/Downloads/HappyMongo/voice/')
+    write_to_txtfile(without_wav,c= os.path.dirname(os.path.realpath(__file__)))
     # speech_to_text_write(with_wav, without_wav)
