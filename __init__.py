@@ -276,8 +276,7 @@ def mysptotal(m,p):
         print("Time taken for analysis: ",time.time() - start)
         return dataset
     except:
-        print ("Try again the sound of the audio was not clear")
-
+        raise ValueError('Try again the sound of the audio was not clear')
     return;
 
 def mysppron(m,p,objects):
