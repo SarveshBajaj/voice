@@ -5,7 +5,7 @@ import os
 mysp=__import__("my-voice-analysis")
 from getResult import *
 from functools import wraps
-import time
+import time, math
 
 app = Flask(__name__)
 _token = "asdhfusaudifhosdufvdfigyi"
@@ -22,8 +22,7 @@ def checkTokens(func):
     @wraps(func)
     def check(*args, **kwargs):
         try:
-            jsonData = request.json
-            token = jsonData['token']
+            token = request.headers['token']
             # applicationId = jsonData['applicationId']
 
             # if token == _token and applicationId == _applicationId:
@@ -46,36 +45,41 @@ def test():
 # @checkTokens
 def uploadfileRealTime():
     try:
-        import pdb; pdb.set_trace()
+        
         f = request.files['file']
-        fileName = str(time.time(0.00001))+f.filename.split('.')[1]
-        filePath = os.path.dirname(os.path.realpath(__file__)) +'/'+"realtime"+fileName
+        fileName = "realtime"+str(math.floor(time.time()))+'.'+f.filename.split('.')[1]
+        filePath = os.path.dirname(os.path.realpath(__file__)) +'/'+fileName
         f.save(filePath)
-        fp = f.filename.split('.')[0]
         fc = os.path.dirname(os.path.realpath(__file__))
-        result = getResultRealTime(fp,fc)
+        result = getResultRealTime(fileName.split('.')[0],fc)
         deleteIfExists(fileName)
+        deleteIfExists(fileName.split('.')[0]+".TextGrid")
         # result["status"] = "sucess"
         return response("success", "Audio Analysed", result)
     except Exception as e:
         deleteIfExists(fileName)
+        deleteIfExists(fileName.split('.')[0]+".TextGrid")
         return response("failure", str(e), {})
 
 @app.route('/uploadFileBasic',methods=['POST'])
 # @checkTokens
 def uploadfileBasic():
     try:
+        # import pdb; pdb.set_trace()
         f = request.files['file']
-        fileName = str(time.time(0.00001))+f.filename.split('.')[1]
-        filePath = os.path.dirname(os.path.realpath(__file__)) +'/'+"basic"+fileName
-        p = f.filename.split('.')[0]
+        fileName = "basic"+str(math.floor(time.time()))+'.'+f.filename.split('.')[1]
+        filePath = os.path.dirname(os.path.realpath(__file__)) +'/'+fileName
+        f.save(filePath)
+        # p = f.filename.split('.')[0]
         c = os.path.dirname(os.path.realpath(__file__)) 
-        result = getResultBasic(p,c)
+        result = getResultBasic(fileName.split('.')[0],c)
         # result["status"] = "sucess"
         deleteIfExists(fileName)
+        deleteIfExists(fileName.split('.')[0]+".TextGrid")
         return response("success", "Audio Analysed", result)
     except Exception as e:
-        deleteIfExists(fileName)
+        # deleteIfExists(fileName)
+        # deleteIfExists(fileName.split('.')[0]+".TextGrid")
         return response("failure", e.message, {})
 
 @app.route('/uploadFileAdvanced',methods=['POST'])
@@ -83,17 +87,20 @@ def uploadfileBasic():
 def uploadfileAdvanced():
     try:
         f = request.files['file']
-        fileName = str(time.time(0.00001))+f.filename.split('.')[1]
-        filePath = os.path.dirname(os.path.realpath(__file__)) +'/'+"advanced"+fileName
+        fileName = "advanced"+str(math.floor(time.time()))+'.'+f.filename.split('.')[1]
+        filePath = os.path.dirname(os.path.realpath(__file__)) +'/'+fileName
         f.save(filePath)
-        p = f.filename.split('.')[0]
-        c = os.path.dirname(os.path.realpath(__file__)) 
-        result = mysp.mysptotal(p,c)
+        # p = f.filename.split('.')[0]
+        c = os.path.dirname(os.path.realpath(__file__))
+        result = getResultAdvanced(fileName.split('.')[0],c) 
+        # result = mysp.mysptotal(fileName.split('.')[0],c)
         deleteIfExists(fileName)
+        deleteIfExists(fileName.split('.')[0]+".TextGrid")
         # result["status"] = "sucess"
         return response("success", "Audio Analysed", result)
     except Exception as e:
         deleteIfExists(fileName)
+        deleteIfExists(fileName.split('.')[0]+".TextGrid")
         return response("failure", e.message, {})
 
 if __name__ == '__main__':
@@ -103,3 +110,4 @@ if __name__ == '__main__':
         print(e)
 
 
+# tochange speech recognition file init for google api type
