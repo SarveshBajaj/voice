@@ -8,8 +8,12 @@ import os, time
 import speech_recognition as sr
 from google.cloud import speech_v1p1beta1
 from google.cloud.speech_v1p1beta1 import enums
+from google.oauth2 import service_account
+from google.cloud import storage
 
-credentialsPath = 'bigTalkVoice-8f1a88e93d49.json'
+credentialsPathSpeech = 'bigTalkVoice-8f1a88e93d49.json'
+credentialsPathStorage = 'bigTalkVoice-a7fdfac75e5d.json'
+
 sliceTime = 30
 fillerWords = ["um", "uh", "er", "ah", "like", "okay", "right","you know"]
 
@@ -34,20 +38,61 @@ def deleteIfExists(fileName):
 
 def callGoogle(filePath):
     # import pdb; pdb.set_trace()
-    f = open(credentialsPath,'r')
-    GOOGLE_CLOUD_SPEECH_CREDENTIALS = f.read()
+    # f = open(credentialsPathSpeech,'r')
+    # GOOGLE_CLOUD_SPEECH_CREDENTIALS = f.read()
+    
 
-    r = sr.Recognizer()
+    GOOGLE_CLOUD_SPEECH_CREDENTIALS = service_account.Credentials.from_service_account_file(credentialsPathSpeech)
+    client = speech_v1p1beta1.SpeechClient(credentials = GOOGLE_CLOUD_SPEECH_CREDENTIALS)
 
-    with sr.AudioFile(filePath) as source:
-        audio_en = r.record(source)
+    storage_client = storage.Client.from_service_account_json(credentialsPathStorage)
+    buckets = list(storage_client.list_buckets())
+    bucket_name = "bigtalkaudio"
+    bucket = storage_client.get_bucket(bucket_name)
+    if(bucket is None):
+        bucket = storage_client.create_bucket(bucket_name)
 
-    text = r.recognize_google_cloud(audio_en, credentials_json = GOOGLE_CLOUD_SPEECH_CREDENTIALS ,preferred_phrases=fillerWords)
+    source_file_name = filePath
+    destination_blob_name = filePath
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(source_file_name)
+    blob.make_public()
+    URL = blob.public_url
 
+    URL = "gs://"+bucket_name+"/"+filePath
+
+    boost = 8.0
+    speech_contexts_element = {"phrases": fillerWords, "boost": boost}
+    speech_contexts = [speech_contexts_element]
+
+    sample_rate_hertz = 44100
+    language_code = "en-US"
+    encoding = enums.RecognitionConfig.AudioEncoding.MP3
+    config = {
+        "speech_contexts": speech_contexts,
+        "sample_rate_hertz": sample_rate_hertz,
+        "language_code": language_code,
+        "encoding": encoding,
+    }
+    audio = {"uri": URL}
+
+
+    operation = client.long_running_recognize(config, audio)
+    response = operation.result()
+    blob.delete()
+    text = ""
+    for result in response.results:
+        alternative = result.alternatives[0]
+        text += alternative.transcript
     result = {}
+    words = text.split(' ')
     for word in fillerWords:
-        result[word] = text.count(word)
+        result[word] = 0
+    for word in words:
+        if word in fillerWords:
+            result[word] += 1
     result["text"] = text
+    # print(result)
     return result
 
 
@@ -174,56 +219,18 @@ def getResultBasic(p,c):
     return temp1
 
 def getResultAdvanced(p,c):
-    # t1 = ThreadWithReturnValue(target=getResultSlicedAudio, args=(p,c,))
-    # t2 = ThreadWithReturnValue(target=getResultFullAudio, args=(p,c,))
-    # filepath = c+'/'+p+'.wav'
-    # t3 = ThreadWithReturnValue(target=callGoogle, args=(filepath,))
-    # t1.start()
-    # t2.start()
-    # t3.start()
-    # temp1 = t1.join()
-    # temp2 = t2.join()
-    # temp3 = t3.join()
-    # temp1["full"] = temp2
-    # temp1['filler_words'] = temp3
-    # return temp1
-    audioDuration = getAudioDuration(p)
-    fullAudioFile = AudioSegment.from_wav(p+".wav")
-    i = 0
     dictionary = {}
     for word in fillerWords:
         dictionary[word] = 0
     dictionary["text"] = ""
-    
-    while(i < math.floor(audioDuration//59)):
-        temp = fullAudioFile[i*59*1000:(i*59+59)*1000]
-        temp.export(p+str(i)+'.wav', format = "wav")
-        data = callGoogle(p+str(i)+'.wav')
-        i+=1
-        for word in fillerWords:
-            dictionary[word] += data[word]
-        dictionary["text"] += data["text"]
-        
-    remainingTime = math.floor(audioDuration%59)*1000
-    temp = fullAudioFile[-remainingTime:]
-    temp.export(p+str(i)+'.wav', format = "wav")
-    data = callGoogle(p+str(i)+'.wav')
-    deleteIfExists(p+str(i)+'.wav')
+    data = callGoogle(p+'.wav')
     for word in fillerWords:
-            dictionary[word] += data[word]
+        dictionary[word] += data[word]
     dictionary["text"] += data["text"]
-
+    # print(dictionary)
     return dictionary
     
 
-
-# p = "vjsnews"
-# c = os.path.dirname(os.path.realpath(__file__))
-# start = time.time()
-# print(getResultRealTime(p,c))
-# print()
-# getResultBasic(p,c)
-# print(time.time()-start)
 
    
 
