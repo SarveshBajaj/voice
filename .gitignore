@@ -74,3 +74,10 @@ voice/slice0.TextGrid
 voice/slice1.TextGrid
 voice/slice1.wav
 voice/slice0.wav
+Flask/config.py
+core
+TestData.txt
+.vscode/launch.json
+.vscode/tasks.json
+Flask/basic1583772948.TextGrid
+Flask/__pycache__/config.cpython-36.pyc

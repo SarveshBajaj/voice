@@ -52,6 +52,7 @@ def uploadfileRealTime():
         f.save(filePath)
         fc = os.path.dirname(os.path.realpath(__file__))
         result = getResultRealTime(fileName.split('.')[0],fc)
+        result["fileName"] = f.filename
         deleteIfExists(fileName)
         deleteIfExists(fileName.split('.')[0]+".TextGrid")
         # result["status"] = "sucess"
@@ -73,6 +74,7 @@ def uploadfileBasic():
         # p = f.filename.split('.')[0]
         c = os.path.dirname(os.path.realpath(__file__)) 
         result = getResultBasic(fileName.split('.')[0],c)
+        result["fileName"] = f.filename
         # result["status"] = "sucess"
         deleteIfExists(fileName)
         deleteIfExists(fileName.split('.')[0]+".TextGrid")
@@ -93,6 +95,7 @@ def uploadfileAdvanced():
         # p = f.filename.split('.')[0]
         c = os.path.dirname(os.path.realpath(__file__))
         result = getResultAdvanced(fileName.split('.')[0],c) 
+        result["fileName"] = f.filename
         # result = mysp.mysptotal(fileName.split('.')[0],c)
         deleteIfExists(fileName)
         deleteIfExists(fileName.split('.')[0]+".TextGrid")

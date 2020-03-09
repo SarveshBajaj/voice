@@ -10,12 +10,57 @@ from google.cloud import speech_v1p1beta1
 from google.cloud.speech_v1p1beta1 import enums
 from google.oauth2 import service_account
 from google.cloud import storage
+from config import *
+import random
 
 credentialsPathSpeech = 'bigTalkVoice-8f1a88e93d49.json'
 credentialsPathStorage = 'bigTalkVoice-a7fdfac75e5d.json'
 
 sliceTime = 30
 fillerWords = ["um", "uh", "er", "ah", "like", "okay", "right","you know"]
+
+def getClarityMessage(clarity):
+    clarity = float(clarity)
+    if(clarity >= CLARITY_RANGE[0] and clarity <= CLARITY_RANGE[1]):
+        return random.choice(messages["clarity"]["good"])
+    else:
+        return random.choice(messages["clarity"]["bad"])
+
+def getIntonationMessage(intonation):
+    intonation = float(intonation)
+    if(intonation >= INTONATION_RANGE[0] and intonation <= INTONATION_RANGE[1]):
+        return random.choice(messages["intonation"]["good"])
+    else:
+        return random.choice(messages["intonation"]["bad"])
+
+def getLoudnessMessage(loudness):
+    loudness = float(loudness)
+    if(loudness >= MINIMUM_LOUDNESS):
+        return random.choice(messages["loudness"]["good"])
+    else:
+        return random.choice(messages["loudness"]["bad"])
+
+def getFillerWordsMessage(numberOfFillerWords, minutes):
+    if(numberOfFillerWords <= numberOfFillerWords*minutes):
+        return random.choice(messages["fillerWords"]["good"])
+    else:
+        return random.choice(messages["fillerWords"]["bad"])
+
+def getPausesMessage(numberOfPauses, minutes):
+    numberOfPauses = float(numberOfPauses)
+    if(numberOfPauses <= numberOfPauses*minutes):
+        return random.choice(messages["pauses"]["good"])
+    else:
+        return random.choice(messages["pauses"]["bad"])
+
+def getSpeechRateMessage(speechRate):
+    speechRate = float(speechRate)
+    if(speechRate >= SPEECHRATE_RANGE[0] and speechRate <= SPEECHRATE_RANGE[1]):
+        return random.choice(messages["speechRate"]["good"])
+    elif(speechRate < SPEECHRATE_RANGE[0]):
+        return random.choice(messages["speechRate"]["low"])
+    else:
+        return random.choice(messages["speechRate"]["high"])
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -117,6 +162,10 @@ def getResults(p,c, requestType):
         result["intonation"] = [temp["f0_std"]]
         result["loudness"] = [getLoudness(p)]
         result["clarity"] = [temp["articulation_rate"]]
+        result["duration"] = [getAudioDuration(p)]
+        result["clarity_message"] = getClarityMessage(temp["articulation_rate"])
+        result["loudness_message"] = getClarityMessage(result["loudness"][0])
+        result["intonation_message"] = getClarityMessage(temp["f0_std"])
         return (result)
 
     if(requestType == "basic"):
@@ -124,7 +173,6 @@ def getResults(p,c, requestType):
         result2.append(getLoudness(p))
         result2.append(temp["articulation_rate"])
         result2.append(temp["number_of_pauses"])
-        # import pdb; pdb.set_trace()
         result2.append(math.ceil(int(temp["rate_of_speech"])*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))        
 
     if(requestType == "advanced"):
@@ -199,13 +247,14 @@ def getResultFullAudio(p,c):
     clarity.append(data[2])
     pauses.append(data[3])
     speechRate.append(data[4])
+
     
     result["intonation"] = intonation
     result["loudness"] = loudness
     result["clarity"] = clarity
     result["pauses"] = pauses
     result["speechRate"] = speechRate
-
+    result["duration"] = getAudioDuration(p)
     return(result)
 
 def getResultBasic(p,c):
@@ -216,6 +265,12 @@ def getResultBasic(p,c):
     temp1 = t1.join()
     temp2 = t2.join()
     temp1["full"] = temp2
+    temp1["clarity_message"] = getClarityMessage(temp2["clarity"][0])
+    temp1["loudness_message"] = getLoudnessMessage(temp2["loudness"][0])
+    temp1["intonation_message"] = getIntonationMessage(temp2["intonation"][0])
+    temp1["pauses_message"] = getPausesMessage(temp2["pauses"][0], round(temp2["duration"]/60))
+    temp1["speechRate_message"] = getSpeechRateMessage(temp2["speechRate"][0])
+
     return temp1
 
 def getResultAdvanced(p,c):
@@ -224,12 +279,19 @@ def getResultAdvanced(p,c):
         dictionary[word] = 0
     dictionary["text"] = ""
     data = callGoogle(p+'.wav')
+    count = 0
     for word in fillerWords:
         dictionary[word] += data[word]
+        count+=data[word]
     dictionary["text"] += data["text"]
+    dictionary["duration"] = getAudioDuration(p)
+    dictionary["fillerWords_message"] = getPausesMessage(count, round(dictionary["duration"]/60))
     # print(dictionary)
     return dictionary
+
+
     
+
 
 
    
