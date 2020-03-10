@@ -22,45 +22,45 @@ fillerWords = ["um", "uh", "er", "ah", "like", "okay", "right","you know"]
 def getClarityMessage(clarity):
     clarity = float(clarity)
     if(clarity >= CLARITY_RANGE[0] and clarity <= CLARITY_RANGE[1]):
-        return random.choice(messages["clarity"]["good"])
+        return random.choice(messages["clarity"]["good"]), True
     else:
-        return random.choice(messages["clarity"]["bad"])
+        return random.choice(messages["clarity"]["bad"]), False
 
 def getIntonationMessage(intonation):
     intonation = float(intonation)
     if(intonation >= INTONATION_RANGE[0] and intonation <= INTONATION_RANGE[1]):
-        return random.choice(messages["intonation"]["good"])
+        return random.choice(messages["intonation"]["good"]), True
     else:
-        return random.choice(messages["intonation"]["bad"])
+        return random.choice(messages["intonation"]["bad"]), False
 
 def getLoudnessMessage(loudness):
     loudness = float(loudness)
     if(loudness >= MINIMUM_LOUDNESS):
-        return random.choice(messages["loudness"]["good"])
+        return random.choice(messages["loudness"]["good"]), True
     else:
-        return random.choice(messages["loudness"]["bad"])
+        return random.choice(messages["loudness"]["bad"]), False
 
 def getFillerWordsMessage(numberOfFillerWords, minutes):
     if(numberOfFillerWords <= numberOfFillerWords*minutes):
-        return random.choice(messages["fillerWords"]["good"])
+        return random.choice(messages["fillerWords"]["good"]), True
     else:
-        return random.choice(messages["fillerWords"]["bad"])
+        return random.choice(messages["fillerWords"]["bad"]), False
 
 def getPausesMessage(numberOfPauses, minutes):
     numberOfPauses = float(numberOfPauses)
     if(numberOfPauses <= numberOfPauses*minutes):
-        return random.choice(messages["pauses"]["good"])
+        return random.choice(messages["pauses"]["good"]), True
     else:
-        return random.choice(messages["pauses"]["bad"])
+        return random.choice(messages["pauses"]["bad"]), False
 
 def getSpeechRateMessage(speechRate):
     speechRate = float(speechRate)
     if(speechRate >= SPEECHRATE_RANGE[0] and speechRate <= SPEECHRATE_RANGE[1]):
-        return random.choice(messages["speechRate"]["good"])
+        return random.choice(messages["speechRate"]["good"]), True
     elif(speechRate < SPEECHRATE_RANGE[0]):
-        return random.choice(messages["speechRate"]["low"])
+        return random.choice(messages["speechRate"]["low"]), False
     else:
-        return random.choice(messages["speechRate"]["high"])
+        return random.choice(messages["speechRate"]["high"]), False
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -163,9 +163,9 @@ def getResults(p,c, requestType):
         result["loudness"] = [getLoudness(p)]
         result["clarity"] = [temp["articulation_rate"]]
         result["duration"] = [getAudioDuration(p)]
-        result["clarity_message"] = getClarityMessage(temp["articulation_rate"])
-        result["loudness_message"] = getClarityMessage(result["loudness"][0])
-        result["intonation_message"] = getClarityMessage(temp["f0_std"])
+        result["clarity_message"], result["isClarityGood"] = getClarityMessage(temp["articulation_rate"])
+        result["loudness_message"], result["isLoudnessGood"] = getClarityMessage(result["loudness"][0])
+        result["intonation_message"], result["isIntonationGood"] = getClarityMessage(temp["f0_std"])
         return (result)
 
     if(requestType == "basic"):
@@ -265,11 +265,11 @@ def getResultBasic(p,c):
     temp1 = t1.join()
     temp2 = t2.join()
     temp1["full"] = temp2
-    temp1["clarity_message"] = getClarityMessage(temp2["clarity"][0])
-    temp1["loudness_message"] = getLoudnessMessage(temp2["loudness"][0])
-    temp1["intonation_message"] = getIntonationMessage(temp2["intonation"][0])
-    temp1["pauses_message"] = getPausesMessage(temp2["pauses"][0], round(temp2["duration"]/60))
-    temp1["speechRate_message"] = getSpeechRateMessage(temp2["speechRate"][0])
+    temp1["clarity_message"],temp1["isClarityGood"] = getClarityMessage(temp2["clarity"][0])
+    temp1["loudness_message"],temp1["isLoudnessGood"] = getLoudnessMessage(temp2["loudness"][0])
+    temp1["intonation_message"],temp1["isIntonationGood"] = getIntonationMessage(temp2["intonation"][0])
+    temp1["pauses_message"],temp1["isPausesGood"] = getPausesMessage(temp2["pauses"][0], round(temp2["duration"]/60))
+    temp1["speechRate_message"],temp1["isSpeechRateGood"] = getSpeechRateMessage(temp2["speechRate"][0])
 
     return temp1
 
@@ -285,7 +285,7 @@ def getResultAdvanced(p,c):
         count+=data[word]
     dictionary["text"] += data["text"]
     dictionary["duration"] = getAudioDuration(p)
-    dictionary["fillerWords_message"] = getPausesMessage(count, round(dictionary["duration"]/60))
+    dictionary["fillerWords_message"],dictionary["isFillerWordsGood"] = getPausesMessage(count, round(dictionary["duration"]/60))
     # print(dictionary)
     return dictionary
 
