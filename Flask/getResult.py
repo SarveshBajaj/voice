@@ -214,15 +214,16 @@ def getResultSlicedAudio(p,c):
     if(i == 0):
         return {}
     remainingTime = math.floor(audioDuration%30)*1000
-    temp = fullAudioFile[-remainingTime:]
-    temp.export(p+str(i)+'.wav', format = "wav")
-    data = getResults(p+str(i),c,"basic")
-    intonation.append(data[0])
-    loudness.append(data[1])
-    clarity.append(data[2])
-    pauses.append(data[3])
-    speechRate.append(data[4])
-    deleteIfExists(p+str(i)+'.wav')
+    if(remainingTime>=15*1000):
+        temp = fullAudioFile[-remainingTime:]
+        temp.export(p+str(i)+'.wav', format = "wav")
+        data = getResults(p+str(i),c,"basic")
+        intonation.append(data[0])
+        loudness.append(data[1])
+        clarity.append(data[2])
+        pauses.append(data[3])
+        speechRate.append(data[4])
+        deleteIfExists(p+str(i)+'.wav')
 
     result["intonation"] = intonation
     result["loudness"] = loudness
