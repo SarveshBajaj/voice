@@ -78,7 +78,9 @@ class ThreadWithReturnValue(Thread):
 
 
 def deleteIfExists(fileName):
-    if(os.path.isfile(fileName)):
+    if(os.path.isfile(fileName+'.wav')):
+        os.remove(fileName)
+    if(os.path.isfile(fileName+'.TextGrid')):
         os.remove(fileName)
 
 def callGoogle(filePath):
@@ -121,9 +123,11 @@ def callGoogle(filePath):
     }
     audio = {"uri": URL}
 
-
-    operation = client.long_running_recognize(config, audio)
-    response = operation.result()
+    try:
+        operation = client.long_running_recognize(config, audio)
+        response = operation.result()
+    except Exception as e:
+        raise e
     blob.delete()
     text = ""
     for result in response.results:
@@ -153,41 +157,48 @@ def getLoudness(p):
 
 def getResults(p,c, requestType):
 
-    temp = mysp.mysptotal(p,c)
-    result2 = []
-    result = {}
+    try:
+        temp = mysp.mysptotal(p,c)
+        result2 = []
+        result = {}
 
-    if(requestType == "realtime"):
+        if(requestType == "realtime"):
 
-        result["intonation"] = [temp["f0_std"]]
-        result["loudness"] = [getLoudness(p)]
-        result["clarity"] = [temp["articulation_rate"]]
-        result["duration"] = [getAudioDuration(p)]
-        result["clarity_message"], result["isClarityGood"] = getClarityMessage(temp["articulation_rate"])
-        result["loudness_message"], result["isLoudnessGood"] = getClarityMessage(result["loudness"][0])
-        result["intonation_message"], result["isIntonationGood"] = getClarityMessage(temp["f0_std"])
-        return (result)
+            result["intonation"] = [temp["f0_std"]]
+            result["loudness"] = [getLoudness(p)]
+            result["clarity"] = [temp["articulation_rate"]]
+            result["duration"] = [getAudioDuration(p)]
+            result["clarity_message"], result["isClarityGood"] = getClarityMessage(temp["articulation_rate"])
+            result["loudness_message"], result["isLoudnessGood"] = getClarityMessage(result["loudness"][0])
+            result["intonation_message"], result["isIntonationGood"] = getClarityMessage(temp["f0_std"])
+            return (result)
 
-    if(requestType == "basic"):
-        result2.append(temp["f0_std"])
-        result2.append(getLoudness(p))
-        result2.append(temp["articulation_rate"])
-        result2.append(temp["number_of_pauses"])
-        result2.append(math.ceil(int(temp["rate_of_speech"])*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))        
+        if(requestType == "basic"):
+            result2.append(temp["f0_std"])
+            result2.append(getLoudness(p))
+            result2.append(temp["articulation_rate"])
+            result2.append(temp["number_of_pauses"])
+            result2.append(math.ceil(int(temp["rate_of_speech"])*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))        
 
-    if(requestType == "advanced"):
-        result2.append(temp["f0_std"])
-        result2.append(getLoudness(p))
-        result2.append(temp["articulation_rate"])
-        result2.append(temp["number_of_pauses"])
-        result2.append(math.ceil(temp["rate_of_speech"]*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))
-        # TODO call google API
+        if(requestType == "advanced"):
+            result2.append(temp["f0_std"])
+            result2.append(getLoudness(p))
+            result2.append(temp["articulation_rate"])
+            result2.append(temp["number_of_pauses"])
+            result2.append(math.ceil(temp["rate_of_speech"]*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))
+            # TODO call google API
+        return (result2)
 
-    return (result2)
+    except:
+        raise ValueError("Audio was not clear")
+
         
 
 def getResultRealTime(p,c):
-    return (getResults(p,c,"realtime"))
+    try:
+        return (getResults(p,c,"realtime"))
+    except:
+        raise ValueError("Audio was not clear")
 
 def getResultSlicedAudio(p,c):
     intonation = []
@@ -203,27 +214,41 @@ def getResultSlicedAudio(p,c):
     while(i < math.floor(audioDuration//30)):
         temp = fullAudioFile[i*30*1000:(i*30+30)*1000]
         temp.export(p+str(i)+'.wav', format = "wav")
-        data = getResults(p+str(i),c,"basic")
-        intonation.append(data[0])
-        loudness.append(data[1])
-        clarity.append(data[2])
-        pauses.append(data[3])
-        speechRate.append(data[4])
+        try:
+            data = getResults(p+str(i),c,"basic")
+            intonation.append(data[0])
+            loudness.append(data[1])
+            clarity.append(data[2])
+            pauses.append(data[3])
+            speechRate.append(data[4])
+        except:
+            intonation.append("NA")
+            loudness.append("NA")
+            clarity.append("NA")
+            pauses.append("NA")
+            speechRate.append("NA")
         i+=1
-        deleteIfExists(p+str(i)+'.wav')
+        deleteIfExists(p+str(i))
     if(i == 0):
         return {}
     remainingTime = math.floor(audioDuration%30)*1000
     if(remainingTime>=15*1000):
         temp = fullAudioFile[-remainingTime:]
         temp.export(p+str(i)+'.wav', format = "wav")
-        data = getResults(p+str(i),c,"basic")
-        intonation.append(data[0])
-        loudness.append(data[1])
-        clarity.append(data[2])
-        pauses.append(data[3])
-        speechRate.append(data[4])
-        deleteIfExists(p+str(i)+'.wav')
+        try:
+            data = getResults(p+str(i),c,"basic")
+            intonation.append(data[0])
+            loudness.append(data[1])
+            clarity.append(data[2])
+            pauses.append(data[3])
+            speechRate.append(data[4])
+        except:
+            intonation.append("NA")
+            loudness.append("NA")
+            clarity.append("NA")
+            pauses.append("NA")
+            speechRate.append("NA")
+    deleteIfExists(p+str(i))
 
     result["intonation"] = intonation
     result["loudness"] = loudness
@@ -242,12 +267,15 @@ def getResultFullAudio(p,c):
     speechRate = []
     result = {}
 
-    data = getResults(p,c,"basic")
-    intonation.append(data[0])
-    loudness.append(data[1])
-    clarity.append(data[2])
-    pauses.append(data[3])
-    speechRate.append(data[4])
+    try:
+        data = getResults(p,c,"basic")
+        intonation.append(data[0])
+        loudness.append(data[1])
+        clarity.append(data[2])
+        pauses.append(data[3])
+        speechRate.append(data[4])
+    except:
+        raise ValueError("Audio was not clear")
 
     
     result["intonation"] = intonation
@@ -259,27 +287,33 @@ def getResultFullAudio(p,c):
     return(result)
 
 def getResultBasic(p,c):
-    t1 = ThreadWithReturnValue(target=getResultSlicedAudio, args=(p,c,))
-    t2 = ThreadWithReturnValue(target=getResultFullAudio, args=(p,c,))
-    t1.start()
-    t2.start()
-    temp1 = t1.join()
-    temp2 = t2.join()
-    temp1["full"] = temp2
-    temp1["clarity_message"],temp1["isClarityGood"] = getClarityMessage(temp2["clarity"][0])
-    temp1["loudness_message"],temp1["isLoudnessGood"] = getLoudnessMessage(temp2["loudness"][0])
-    temp1["intonation_message"],temp1["isIntonationGood"] = getIntonationMessage(temp2["intonation"][0])
-    temp1["pauses_message"],temp1["isPausesGood"] = getPausesMessage(temp2["pauses"][0], round(temp2["duration"]/60))
-    temp1["speechRate_message"],temp1["isSpeechRateGood"] = getSpeechRateMessage(temp2["speechRate"][0])
-
-    return temp1
+    try:
+        t1 = ThreadWithReturnValue(target=getResultSlicedAudio, args=(p,c,))
+        t2 = ThreadWithReturnValue(target=getResultFullAudio, args=(p,c,))
+        t1.start()
+        t2.start()
+        temp1 = t1.join()
+        temp2 = t2.join()
+        temp1["full"] = temp2
+        temp1["clarity_message"],temp1["isClarityGood"] = getClarityMessage(temp2["clarity"][0])
+        temp1["loudness_message"],temp1["isLoudnessGood"] = getLoudnessMessage(temp2["loudness"][0])
+        temp1["intonation_message"],temp1["isIntonationGood"] = getIntonationMessage(temp2["intonation"][0])
+        temp1["pauses_message"],temp1["isPausesGood"] = getPausesMessage(temp2["pauses"][0], round(temp2["duration"]/60))
+        temp1["speechRate_message"],temp1["isSpeechRateGood"] = getSpeechRateMessage(temp2["speechRate"][0])
+        return temp1
+    except:
+        raise ValueError("Audio was not clear")
+    
 
 def getResultAdvanced(p,c):
     dictionary = {}
     for word in fillerWords:
         dictionary[word] = 0
     dictionary["text"] = ""
-    data = callGoogle(p+'.wav')
+    try:
+        data = callGoogle(p+'.wav')
+    except Exception as e:
+        raise e
     count = 0
     for word in fillerWords:
         dictionary[word] += data[word]

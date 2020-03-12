@@ -82,7 +82,7 @@ def uploadfileBasic():
     except Exception as e:
         # deleteIfExists(fileName)
         # deleteIfExists(fileName.split('.')[0]+".TextGrid")
-        return response("failure", e.message, {})
+        return response("failure", str(e), {})
 
 @app.route('/uploadFileAdvanced',methods=['POST'])
 # @checkTokens
@@ -104,7 +104,7 @@ def uploadfileAdvanced():
     except Exception as e:
         deleteIfExists(fileName)
         deleteIfExists(fileName.split('.')[0]+".TextGrid")
-        return response("failure", e.message, {})
+        return response("failure", str(e), {})
 
 if __name__ == '__main__':
     try:
