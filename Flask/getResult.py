@@ -168,17 +168,17 @@ def getResults(p,c, requestType):
             result["loudness"] = [getLoudness(p)]
             result["clarity"] = [temp["articulation_rate"]]
             result["duration"] = [getAudioDuration(p)]
-            result["loudness_message"], result["isLoudnessGood"] = getLoudnessMessage(result["loudness"][0])
-            result["clarity_message"], result["isClarityGood"] = getClarityMessage(temp["articulation_rate"])
-            result["intonation_message"], result["isIntonationGood"] = getIntonationMessage(temp["f0_std"])
+            loudness_message, result["isLoudnessGood"] = getLoudnessMessage(result["loudness"][0])
+            clarity_message, result["isClarityGood"] = getClarityMessage(temp["articulation_rate"])
+            intonation_message, result["isIntonationGood"] = getIntonationMessage(temp["f0_std"])
             if(result["isLoudnessGood"] == False):
-                result["message"] = "You are not audible"
+                result["message"] = messages["realTime"]["loudness"]
             elif(result["isClarityGood"] == False):
-                result["message"] = "You are mumbling"
+                result["message"] = messages["realTime"]["clarity"]
             elif(result["isIntonationGood"] == False):
-                result["message"] = random.choice(["Tone needs variation","Tone feels montonous"])
+                result["message"] = random.choice(messages["realTime"]["intonation"])
             else:
-                result["message"] = "All okay!"
+                result["message"] = messages["realTime"]["perfect"]
             return (result)
 
         if(requestType == "basic"):
