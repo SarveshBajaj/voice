@@ -172,13 +172,13 @@ def getResults(p,c, requestType):
             clarity_message, result["isClarityGood"] = getClarityMessage(temp["articulation_rate"])
             intonation_message, result["isIntonationGood"] = getIntonationMessage(temp["f0_std"])
             if(result["isLoudnessGood"] == False):
-                result["message"] = messages["realTime"]["loudness"]
+                result["message"] = random.choice(messages["realTime"]["loudness"])
             elif(result["isClarityGood"] == False):
-                result["message"] = messages["realTime"]["clarity"]
+                result["message"] = random.choice(messages["realTime"]["clarity"])
             elif(result["isIntonationGood"] == False):
                 result["message"] = random.choice(messages["realTime"]["intonation"])
             else:
-                result["message"] = messages["realTime"]["perfect"]
+                result["message"] = random.choice(messages["realTime"]["perfect"])
             return (result)
 
         if(requestType == "basic"):
