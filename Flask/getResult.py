@@ -331,16 +331,3 @@ def getResultAdvanced(p,c):
     dictionary["fillerWords_message"],dictionary["isFillerWordsGood"] = getPausesMessage(count, round(dictionary["duration"]/60))
     # print(dictionary)
     return dictionary
-
-# p = 'interviewnew'
-# import pdb; pdb.set_trace()
-# fullAudioFile = AudioSegment.from_wav(p+".wav")
-# temp = fullAudioFile
-# temp.export(p+'1'+'.wav', format = "wav")
-# check = mysp.mysptotal(p+'1','/home/sarvesh/Downloads/HappyMongo/voice/Flask')
-    
-
-
-
-   
-
