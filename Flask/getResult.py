@@ -79,9 +79,9 @@ class ThreadWithReturnValue(Thread):
 
 def deleteIfExists(fileName):
     if(os.path.isfile(fileName+'.wav')):
-        os.remove(fileName)
+        os.remove(fileName+'.wav')
     if(os.path.isfile(fileName+'.TextGrid')):
-        os.remove(fileName)
+        os.remove(fileName+'.TextGrid')
 
 def callGoogle(filePath):
     # import pdb; pdb.set_trace()
@@ -235,8 +235,8 @@ def getResultSlicedAudio(p,c):
             clarity.append("NA")
             pauses.append("NA")
             speechRate.append("NA")
-        i+=1
         deleteIfExists(p+str(i))
+        i+=1
     if(i == 0):
         return {}
     remainingTime = math.floor(audioDuration%30)*1000
@@ -332,7 +332,12 @@ def getResultAdvanced(p,c):
     # print(dictionary)
     return dictionary
 
-
+# p = 'interviewnew'
+# import pdb; pdb.set_trace()
+# fullAudioFile = AudioSegment.from_wav(p+".wav")
+# temp = fullAudioFile
+# temp.export(p+'1'+'.wav', format = "wav")
+# check = mysp.mysptotal(p+'1','/home/sarvesh/Downloads/HappyMongo/voice/Flask')
     
 
 
