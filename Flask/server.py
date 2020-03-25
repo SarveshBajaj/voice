@@ -37,12 +37,12 @@ def checkTokens(func):
 
 
 @app.route("/test",methods = ['GET'])
-# @checkTokens
+@checkTokens
 def test():
     return "working"
 
 @app.route('/uploadFileRealTime',methods=['POST'])
-# @checkTokens
+@checkTokens
 def uploadfileRealTime():
     try:
         
@@ -63,7 +63,7 @@ def uploadfileRealTime():
         return response("failure", str(e), {})
 
 @app.route('/uploadFileBasic',methods=['POST'])
-# @checkTokens
+@checkTokens
 def uploadfileBasic():
     try:
         # import pdb; pdb.set_trace()
@@ -85,7 +85,7 @@ def uploadfileBasic():
         return response("failure", str(e), {})
 
 @app.route('/uploadFileAdvanced',methods=['POST'])
-# @checkTokens
+@checkTokens
 def uploadfileAdvanced():
     try:
         f = request.files['file']
