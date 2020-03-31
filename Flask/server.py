@@ -80,8 +80,8 @@ def uploadfileBasic():
         deleteIfExists(fileName.split('.')[0]+".TextGrid")
         return response("success", "Audio Analysed", result)
     except Exception as e:
-        # deleteIfExists(fileName)
-        # deleteIfExists(fileName.split('.')[0]+".TextGrid")
+        deleteIfExists(fileName)
+        deleteIfExists(fileName.split('.')[0]+".TextGrid")
         return response("failure", str(e), {})
 
 @app.route('/uploadFileAdvanced',methods=['POST'])
