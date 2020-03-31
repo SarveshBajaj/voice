@@ -17,8 +17,6 @@ public class RecorderScript : MonoBehaviour
 
         private int sampleoffset;
 
-        private List<AudioClip> slicedClips;  
-
         private float[] slice;
     #endregion
 
@@ -28,6 +26,8 @@ public class RecorderScript : MonoBehaviour
         public AudioSource audioSource;
 
         public Text status;
+
+        public WebRequestHandler webRequestHandler; 
     #endregion
     
     #region Monobehaviour callbacks
@@ -120,15 +120,17 @@ public class RecorderScript : MonoBehaviour
             sampleoffset+=slice.Length;
             AudioClip slicedClip = AudioClip.Create("slicedClip",slice.Length,ch,freq,false);
             slicedClip.SetData(slice,0);
-           // slicedClips.Add(slicedClip);
-            SavWav.Save("slice"+count++.ToString(),slicedClip);
+
+            string filename = "slice"+count++.ToString();
+            SavWav.Save(filename,slicedClip);
+            webRequestHandler.AnalyseSlice(filename,count);
             }
             
 
         }
 
         void clearSavingDirectory(){
-            DirectoryInfo d = new DirectoryInfo(Application.persistentDataPath);
+            DirectoryInfo d = new DirectoryInfo(Application.dataPath+"/audio");
             FileInfo[] files = d.GetFiles();
             foreach (FileInfo file in files)
             {
