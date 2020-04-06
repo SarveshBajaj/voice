@@ -6,13 +6,14 @@ import math
 from pydub import AudioSegment
 import os, time
 import speech_recognition as sr
-from multiprocessing import Process, Queue
+import multiprocessing as mp
 import os
 from google.cloud import speech_v1p1beta1
 from google.cloud.speech_v1p1beta1 import enums
 from google.oauth2 import service_account
 from google.cloud import storage
 from config import *
+import traceback
 import random, time
 
 credentialsPathSpeech = 'bigTalkVoice-8f1a88e93d49.json'
@@ -20,6 +21,29 @@ credentialsPathStorage = 'bigTalkVoice-a7fdfac75e5d.json'
 
 sliceTime = 30
 fillerWords = ["um", "uh", "er", "ah", "like", "okay", "right","you know"]
+
+
+class Process(mp.Process):
+    def __init__(self, *args, **kwargs):
+        mp.Process.__init__(self, *args, **kwargs)
+        self._pconn, self._cconn = mp.Pipe()
+        self._exception = None
+
+    def run(self):
+        try:
+            mp.Process.run(self)
+            self._cconn.send(None)
+        except Exception as e:
+            tb = traceback.format_exc()
+            self._cconn.send((e, tb))
+            raise e  # You can still rise this exception if you need to
+
+    @property
+    def exception(self):
+        if self._pconn.poll():
+            self._exception = self._pconn.recv()
+        return self._exception
+
 
 def getClarityMessage(clarity):
     clarity = float(clarity)
@@ -163,7 +187,7 @@ def getResults(p,c, requestType):
         temp = mysp.mysptotal(p,c)
         result2 = []
         result = {}
-
+        result["gender"] = temp["Gender and Mood of Speech"]
         if(requestType == "realtime"):
 
             result["intonation"] = [temp["f0_std"]]
@@ -189,6 +213,7 @@ def getResults(p,c, requestType):
             result2.append(temp["articulation_rate"])
             result2.append(temp["number_of_pauses"])
             result2.append(math.ceil(int(temp["rate_of_speech"])*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))        
+            result2.append(temp["Gender and Mood of Speech"])
 
         if(requestType == "advanced"):
             result2.append(temp["f0_std"])
@@ -196,7 +221,8 @@ def getResults(p,c, requestType):
             result2.append(temp["articulation_rate"])
             result2.append(temp["number_of_pauses"])
             result2.append(math.ceil(temp["rate_of_speech"]*float(temp["original_duration"])*(60/float(temp["original_duration"]))/1.74))
-            # TODO call google API
+
+
         return (result2)
 
     except:
@@ -206,7 +232,10 @@ def getResults(p,c, requestType):
 
 def getResultRealTime(p,c):
     try:
-        return (getResults(p,c,"realtime"))
+        data = getResults(p,c,"realtime")
+        if(data["gender"]== "Voice not recognized"):
+            raise ValueError("Audio was not clear")
+        return data
     except:
         raise ValueError("Audio was not clear")
 
@@ -230,6 +259,8 @@ def getResultSlicedAudio(p,c,q):
         temp.export(p+str(i)+'.wav', format = "wav")
         try:
             data = getResults(p+str(i),c,"basic")
+            if(data[5]=="Voice not recognized"):
+                raise ValueError("Audio was not clear")
             intonation.append(data[0])
             loudness.append(data[1])
             clarity.append(data[2])
@@ -251,6 +282,7 @@ def getResultSlicedAudio(p,c,q):
         temp.export(p+str(i)+'.wav', format = "wav")
         try:
             data = getResults(p+str(i),c,"basic")
+
             intonation.append(data[0])
             loudness.append(data[1])
             clarity.append(data[2])
@@ -269,8 +301,8 @@ def getResultSlicedAudio(p,c,q):
     result["clarity"] = clarity
     result["pauses"] = pauses
     result["speechRate"] = speechRate
-    print("start time slice1 = ", time1)
-    print("Slice1 : " ,(time.time()-time1))
+    # print("start time slice1 = ", time1)
+    # print("Slice1 : " ,(time.time()-time1))
     # print("slice1 : ", result)
     q.put(result)
     # return (result)
@@ -295,6 +327,8 @@ def getResultSlicedAudio2(p,c,q):
         temp.export(p+str(i)+'.wav', format = "wav")
         try:
             data = getResults(p+str(i),c,"basic")
+            if(data[5]=="Voice not recognized"):
+                raise ValueError("Audio was not clear")
             intonation.append(data[0])
             loudness.append(data[1])
             clarity.append(data[2])
@@ -334,8 +368,8 @@ def getResultSlicedAudio2(p,c,q):
     result["clarity"] = clarity
     result["pauses"] = pauses
     result["speechRate"] = speechRate
-    print("start time slice2 = ", time1)
-    print("Slice2 : " ,(time.time()-time1))
+    # print("start time slice2 = ", time1)
+    # print("Slice2 : " ,(time.time()-time1))
     # print("slice2 : ", result)
     q.put(result)
     # return (result)
@@ -367,20 +401,21 @@ def getResultFullAudio(p,c,q):
     result["pauses"] = pauses
     result["speechRate"] = speechRate
     result["duration"] = getAudioDuration(p)
-    print("start time full = ", time1)
-    print("Full : " ,(time.time()-time1))
+    result["gender"] = data[5]
+    # print("start time full = ", time1)
+    # print("Full : " ,(time.time()-time1))
     q.put(result)
     # return(result)
 
 def getResultBasic(p,c):
     try:
-        q1 = Queue()
-        q2 = Queue()
+        q1 = mp.Queue()
+        q2 = mp.Queue()
         audioDuration = getAudioDuration(p)
         t1 = Process(target=getResultSlicedAudio, args=(p,c,q1,))
         t2 = Process(target=getResultFullAudio, args=(p,c,q2,))
         if(audioDuration>60):
-            q3 = Queue()
+            q3 = mp.Queue()
             t3 = Process(target=getResultSlicedAudio2, args=(p,c,q3,))
             t1.start()
             t3.start()
@@ -391,6 +426,8 @@ def getResultBasic(p,c):
             t2.join()
             temp3 = q3.get()
             t3.join()
+            if(temp2["gender"] == "Voice not recognized"):
+                raise ValueError("Audio was not clear")
             temp1["clarity"].extend(temp3["clarity"])
             temp1["loudness"].extend(temp3["loudness"])
             temp1["pauses"].extend(temp3["pauses"])
