@@ -4,7 +4,7 @@ import pyloudnorm as pyln
 from threading import Thread
 import math
 from pydub import AudioSegment
-import os, time
+import os, time, psutil
 import speech_recognition as sr
 import multiprocessing as mp
 import os
@@ -12,9 +12,11 @@ from google.cloud import speech_v1p1beta1
 from google.cloud.speech_v1p1beta1 import enums
 from google.oauth2 import service_account
 from google.cloud import storage
+from memory_profiler import profile
 from config import *
 import traceback
 import random, time
+
 
 credentialsPathSpeech = 'bigTalkVoice-8f1a88e93d49.json'
 credentialsPathStorage = 'bigTalkVoice-a7fdfac75e5d.json'
@@ -407,6 +409,7 @@ def getResultFullAudio(p,c,q):
     q.put(result)
     # return(result)
 
+@profile(precision=4)
 def getResultBasic(p,c):
     try:
         q1 = mp.Queue()
